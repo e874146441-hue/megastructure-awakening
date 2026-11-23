@@ -1,6 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
+<script>
+// GitHub Pages build: index.wasm / index.pck are also shipped gzip-compressed (about 35 MB instead of 88 MB).
+// They are inflated in the browser while they stream in, so the loading bar keeps moving.
+// Browsers without DecompressionStream fall back to the plain files.
+(function(){
+  var PACKED={"index.wasm":"application/wasm","index.pck":"application/octet-stream"};
+  var realFetch=window.fetch.bind(window);
+  window.fetch=function(input, init){
+    var url=(typeof input==='string')?input:((input&&input.url)||String(input));
+    var path=url.split('?')[0].split('#')[0];
+    var key=Object.keys(PACKED).find(function(k){return path.endsWith(k);});
+    if(!key||typeof DecompressionStream==='undefined'||typeof ReadableStream==='undefined') return realFetch(input, init);
+    return realFetch(path+'.gz', init).then(function(r){
+      if(!r.ok||!r.body) return realFetch(input, init);
+      var reader=r.body.getReader();
+      return reader.read().then(function(first){
+        var head=first.value||new Uint8Array(0);
+        var gz=head.length>1&&head[0]===0x1f&&head[1]===0x8b;
+        var body=new ReadableStream({
+          start:function(c){ if(head.length) c.enqueue(head); if(first.done) c.close(); },
+          pull:function(c){ return reader.read().then(function(x){ if(x.done) c.close(); else c.enqueue(x.value); }); }
+        });
+        if(gz) body=body.pipeThrough(new DecompressionStream('gzip'));
+        return new Response(body,{status:200,headers:{'Content-Type':PACKED[key]}});
+      });
+    }).catch(function(){ return realFetch(input, init); });
+  };
+})();
+</script>
+
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
 		<title>巨构唤醒 Megastructure Awakening</title>
@@ -111,7 +141,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":48320308,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":29765300,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
