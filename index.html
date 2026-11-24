@@ -30,6 +30,30 @@
   };
 })();
 </script>
+<script>
+(function(){
+  var ua=navigator.userAgent;
+  window.__megaForceLandscape=/Android|iPhone|iPad|iPod|Mobile/i.test(ua)||(navigator.maxTouchPoints>1&&/Macintosh/.test(ua));
+  window.__megaPortrait=function(){return !!window.__megaForceLandscape&&window.innerHeight>window.innerWidth;};
+  function apply(){
+    var c=document.getElementById('canvas'); if(!c) return;
+    var rot=window.__megaPortrait();
+    c.__megaRot=rot;
+    if(rot){
+      c.style.position='absolute'; c.style.left='0px'; c.style.top='0px';
+      c.style.transformOrigin='0 0';
+      c.style.transform='translate('+window.innerWidth+'px,0) rotate(90deg)';
+    } else if(c.style.transform){
+      c.style.transform=''; c.style.position=''; c.style.left=''; c.style.top='';
+    }
+  }
+  window.__megaApplyRotation=apply;
+  window.addEventListener('resize',function(){setTimeout(apply,0);});
+  window.addEventListener('orientationchange',function(){setTimeout(apply,60);});
+  document.addEventListener('DOMContentLoaded',apply);
+  setInterval(apply,400);
+})();
+</script>
 
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
@@ -141,7 +165,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":29824580,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":29826404,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
